@@ -198,7 +198,10 @@ country_codes = {
     "Zimbabwe": "ZW",
 }
 
+saved_locations = []
 my_API = '4d20a4dc273256d2214e0d809460c1dd'
+
+
 
 def get_weather(api_key, city,country_code):
     base_url = "http://api.openweathermap.org/data/2.5/weather"
@@ -245,21 +248,53 @@ def get_datetime_in_timezone(time_difference):
 
     return target_datetime
 
+def type_city(answer):
+        if answer.lower() == 'y':
+            city = input ('Enter your requested city: ')
+            country_code = input ('Enter country name or code: ')
+            if len(country_code) != 2:
+                country_code = country_codes[country_code]
+            time_difference = get_weather(api_key, city, country_code)
+            result_datetime = get_datetime_in_timezone(time_difference)        
+            try:
+                # Print the result with the custom strftime format
+                print(f"Current date and time in {city} is:")
+                print(result_datetime.strftime("%A, %B %d, %Y, %H:%M %p"))
+            except ValueError:
+                print("Invalid input. Please enter a valid number.")
+                                    
+            first_flag = False
+            while first_flag == False:
+                answer = input ('Would you like to save this city? (Y/N) ')
+                if answer.lower() == 'y':
+                    saved_locations.append((city,country_code))
+                    print('city saved')
+                    first_flag = True
+                elif answer.lower() == 'n':
+                    print('city discarded')
+                    first_flag = True
+                else: 
+                    print ("Please type 'Y' for yes or 'N' for no")             
+            print (saved_locations)
+            type_city(input ('Would you like to check the weather in another city? (Y/N): '))
+            
+        elif answer.lower() == 'n':
+            print("Ok, Thanks!")
+        else:
+            print ("Please type 'Y' for yes or 'N' for no")
+            type_city(input ('Would you like to check the weather in a city? (Y/N): '))
+
+
 if __name__ == "__main__":
     api_key = my_API
+<<<<<<< Updated upstream
 
     city = input ('Enter your requested city: ')
     country_code = input ('Enter country name or code: ')
     if len(country_code) != 2:
       country_code = country_codes[country_code]
+=======
+    type_city(input ('Would you like to check the weather in a city? (Y/N): '))
+>>>>>>> Stashed changes
 
-    time_difference = get_weather(api_key, city,country_code)
-
-        # Get the date and time in the specified timezone
-    result_datetime = get_datetime_in_timezone(time_difference)
-    try:
-        # Print the result with the custom strftime format
-        print(f"Current date and time in {city} is:")
-        print(result_datetime.strftime("%A, %B %d, %Y, %H:%M %p"))
-    except ValueError:
-        print("Invalid input. Please enter a valid number.")
+    
