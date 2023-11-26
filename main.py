@@ -1,6 +1,7 @@
 import requests
 from datetime import datetime
 import pytz
+import streamlit as st
 
 country_codes = {
     "Afghanistan": "AF",
@@ -247,7 +248,7 @@ def get_datetime_in_timezone(time_difference):
 
 if __name__ == "__main__":
     api_key = my_API
-
+    st.write ("check")
     city = input ('Enter your requested city: ')
     country_code = input ('Enter country name or code: ')
     if len(country_code) != 2:
