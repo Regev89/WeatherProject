@@ -2,8 +2,6 @@ import requests
 from datetime import datetime
 import pytz
 import streamlit as st
-<<<<<<< Updated upstream
-=======
 
 cities_list = []
 cities_list.append(('Tokyo', 'Japan'))
@@ -11,7 +9,6 @@ cities_list.append(('Buenos Aires', 'Argentina'))
 cities_list.append(('Tel Aviv', 'Israel'))
 cities_list.append(('Rome', 'Italy'))
 cities_list.sort()
->>>>>>> Stashed changes
 
 country_codes = {
     "Afghanistan": "AF",
@@ -271,26 +268,6 @@ def get_datetime_in_timezone(time_difference):
 
     return target_datetime
 
-<<<<<<< Updated upstream
-if __name__ == "__main__":
-    api_key = my_API
-    st.write ("check")
-    city = input ('Enter your requested city: ')
-    country_code = input ('Enter country name or code: ')
-    if len(country_code) != 2:
-      country_code = country_codes[country_code]
-
-    time_difference = get_weather(api_key, city,country_code)
-
-        # Get the date and time in the specified timezone
-    result_datetime = get_datetime_in_timezone(time_difference)
-    try:
-        # Print the result with the custom strftime format
-        print(f"Current date and time in {city} is:")
-        print(result_datetime.strftime("%A, %B %d, %Y, %H:%M %p"))
-    except ValueError:
-        print("Invalid input. Please enter a valid number.")
-=======
 def save_new_city(city, country_code):
     global cities_list
     cities_list.append((city, country_code))
@@ -356,4 +333,3 @@ if __name__ == "__main__":
     
     # type_city(input ('Would you like to check the weather in a city? (Y/N): '))
     
->>>>>>> Stashed changes
