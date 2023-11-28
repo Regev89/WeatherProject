@@ -2,6 +2,16 @@ import requests
 from datetime import datetime
 import pytz
 import streamlit as st
+<<<<<<< Updated upstream
+=======
+
+cities_list = []
+cities_list.append(('Tokyo', 'Japan'))
+cities_list.append(('Buenos Aires', 'Argentina'))
+cities_list.append(('Tel Aviv', 'Israel'))
+cities_list.append(('Rome', 'Italy'))
+cities_list.sort()
+>>>>>>> Stashed changes
 
 country_codes = {
     "Afghanistan": "AF",
@@ -222,10 +232,25 @@ def get_weather(api_key, city,country_code):
             humidity = data['main']['humidity']
             timezone = data.get('timezone', None)
 
-            print(f"Weather in {city}, {country_code}:")
+            print(f"Weather in {city.title()}, {country_code}:")
             print(f"Description: {weather_description}")
             print(f"Temperature: {temperature:.2f}°C")
             print(f"Humidity: {humidity}%")
+            
+            st.markdown(f"## Weather in {city.title()}, {country_code}:")
+                
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.write(f"Temperature: {temperature:.2f}°C")
+
+            with col2:
+                st.write(f"Description: {weather_description.capitalize()}")
+
+            with col3:
+                st.write(f"Humidity: {humidity}%")
+            
+            
+            
             # print(f"Timezone is: {timezone}")
             return int(timezone/3600)
         else:
@@ -246,6 +271,7 @@ def get_datetime_in_timezone(time_difference):
 
     return target_datetime
 
+<<<<<<< Updated upstream
 if __name__ == "__main__":
     api_key = my_API
     st.write ("check")
@@ -264,3 +290,70 @@ if __name__ == "__main__":
         print(result_datetime.strftime("%A, %B %d, %Y, %H:%M %p"))
     except ValueError:
         print("Invalid input. Please enter a valid number.")
+=======
+def save_new_city(city, country_code):
+    global cities_list
+    cities_list.append((city, country_code))
+    print(cities_list)
+    st.text('Saved successfully')
+    
+
+def new_city():
+    st.markdown("# Weather App")
+    st.markdown("## <span style='color:#000080;'>Regev Ace</span>", unsafe_allow_html=True)
+    st.text('Created as a python project for Data Science study')
+    st.markdown("<span style='border-bottom: 5px solid green;'></span>", unsafe_allow_html=True)
+
+    
+    # 1 - city
+    city = st.text_input('Enter your requested city: ')
+    if city:
+        # 2 - country
+        country = st.selectbox('Please choose a country from the list below:', options= country_codes.keys(), placeholder="Choose a country",index=None)
+        if country is not None:
+            country_code = country_codes[country]
+            time_difference = get_weather(api_key, city, country_code)
+            result_datetime = get_datetime_in_timezone(time_difference)
+            try:
+                # Print the result with the custom strftime format
+                print(f"Current date and time in {city} is:")
+                print(result_datetime.strftime("%A, %B %d, %Y, %H:%M %p"))
+                st.markdown(f'## {result_datetime.strftime("%A, %B %d, %Y, %H:%M %p")}')
+                
+            except ValueError:
+                print("Invalid input. Please enter a valid number.") 
+            
+            save_button = st.button("Save City")
+            if (save_button):
+                save_new_city(city, country_code)
+                country = None
+    
+
+def saved_cities():
+    st.title('Please Choose a city from the list: ')
+    print (cities_list)
+    selected_city = st.selectbox(" ",options=[city [0] for city in cities_list], placeholder="Choose a city",
+                                 index=None, label_visibility="hidden")
+    if selected_city is not None:
+        for city in cities_list:
+            if selected_city in city:
+                selected_city_county_code = country_codes[city[1]]
+        get_weather(my_API, selected_city, selected_city_county_code)
+        
+
+
+
+if __name__ == "__main__":
+    api_key = my_API
+    with st.sidebar:
+        st.title('Quick Menu')
+        selected = st.sidebar.selectbox("Please Choose one of the following optoins: ", ("New City", "Saved Cities"), 
+                                        placeholder="Choose an option", index=None)
+    match selected:
+        case 'New City': new_city()
+        case 'Saved Cities': saved_cities()
+        
+    
+    # type_city(input ('Would you like to check the weather in a city? (Y/N): '))
+    
+>>>>>>> Stashed changes
