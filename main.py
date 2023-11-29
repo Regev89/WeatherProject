@@ -206,7 +206,7 @@ country_codes = {
     "Zimbabwe": "ZW",
 }
 
-my_API = '4d20a4dc273256d2214e0d809460c1dd'
+api_key = '4d20a4dc273256d2214e0d809460c1dd'
 
 def get_weather(api_key, city,country_code):
     base_url = "http://api.openweathermap.org/data/2.5/weather"
@@ -227,12 +227,13 @@ def get_weather(api_key, city,country_code):
             weather_description = data['weather'][0]['description']
             temperature = data['main']['temp']
             humidity = data['main']['humidity']
-            timezone = data.get('timezone', None)
+            timezone = data.get('timezone', int)
 
             print(f"Weather in {city.title()}, {country_code}:")
             print(f"Description: {weather_description}")
             print(f"Temperature: {temperature:.2f}°C")
             print(f"Humidity: {humidity}%")
+            print(f"Timezone: {timezone}")
             
             st.markdown(f"## Weather in {city.title()}, {country_code}:")
                 
@@ -246,21 +247,18 @@ def get_weather(api_key, city,country_code):
             with col3:
                 st.write(f"Humidity: {humidity}%")
             
-            
-            
+
             # print(f"Timezone is: {timezone}")
-            return int(timezone/3600)
+            print (int(int(timezone)/3600))
+            return int(int(timezone)/3600)
         else:
             print(f"Error: {data['message']}")
     except Exception as e:
         print(f"An error occurred: {e}")
         
-def get_datetime_in_timezone(time_difference):
+def get_datetime_in_timezone(time_difference: int):
     # Get the current UTC time
     utc_now = datetime.utcnow()
-    user_time = datetime.now(pytz.timezone('Israel'))
-    formatted_user_time = user_time.strftime("%A, %B %d, %Y, %H:%M %p")
-    print(f"Your current date and time: {formatted_user_time}")
 
     # Calculate the time with the specified difference
     target_timezone = pytz.timezone(f'Etc/GMT{"-" if time_difference >= 0 else ""}{time_difference}')
@@ -276,14 +274,15 @@ def save_new_city(city, country_code):
     
 
 def new_city():
-    st.markdown("# Weather App")
+    user_time = datetime.now(pytz.timezone('Israel'))
+    formatted_user_time = user_time.strftime("%A, %B %d, %Y, %H:%M %p")
+    st.markdown("# Current time in Isreal:")
+    st.markdown(formatted_user_time)
     st.markdown("## <span style='color:#000080;'>Regev Ace</span>", unsafe_allow_html=True)
     st.text('Created as a python project for Data Science study')
     st.markdown("<span style='border-bottom: 5px solid green;'></span>", unsafe_allow_html=True)
 
-    
-    # 1 - city
-    city = st.text_input('Enter your requested city: ')
+    city = st.text_input('Enter your requested city: ', key="widget")
     if city:
         # 2 - country
         country = st.selectbox('Please choose a country from the list below:', options= country_codes.keys(), placeholder="Choose a country",index=None)
@@ -295,18 +294,18 @@ def new_city():
                 # Print the result with the custom strftime format
                 print(f"Current date and time in {city} is:")
                 print(result_datetime.strftime("%A, %B %d, %Y, %H:%M %p"))
-                st.markdown(f'## {result_datetime.strftime("%A, %B %d, %Y, %H:%M %p")}')
+                st.markdown(f'## Current date and time in {city} is:\n{result_datetime.strftime("%A, %B %d, %Y, %H:%M %p")}')
                 
             except ValueError:
                 print("Invalid input. Please enter a valid number.") 
             
-            save_button = st.button("Save City")
+            save_button = st.button("Save City")       
             if (save_button):
-                save_new_city(city, country_code)
-                country = None
-    
+                save_new_city(city, country_code)        
+            
 
 def saved_cities():
+
     st.title('Please Choose a city from the list: ')
     print (cities_list)
     selected_city = st.selectbox(" ",options=[city [0] for city in cities_list], placeholder="Choose a city",
@@ -315,20 +314,40 @@ def saved_cities():
         for city in cities_list:
             if selected_city in city:
                 selected_city_county_code = country_codes[city[1]]
-        get_weather(my_API, selected_city, selected_city_county_code)
-        
-
-
+        time_difference = get_weather(api_key, selected_city, selected_city_county_code)
+        result_datetime = get_datetime_in_timezone(time_difference)
+        try:
+                # Print the result with the custom strftime format
+                print(f"Current date and time in {selected_city} is:")
+                print(result_datetime.strftime("%A, %B %d, %Y, %H:%M %p"))
+                st.markdown(f'## Current date and time in {selected_city} is:\n{result_datetime.strftime("%A, %B %d, %Y, %H:%M %p")}')
+                
+        except ValueError:
+            print("Invalid input. Please enter a valid number.") 
+            
+def welcome(name):
+    st.title(f'Greetings {name}')
+    
+def submit():
+    st.session_state.something = st.session_state.widget
+    st.session_state.widget = ''
 
 if __name__ == "__main__":
-    api_key = my_API
     with st.sidebar:
-        st.title('Quick Menu')
+        st.title('Select User')
         selected = st.sidebar.selectbox("Please Choose one of the following optoins: ", ("New City", "Saved Cities"), 
                                         placeholder="Choose an option", index=None)
+    
+    if 'something' not in st.session_state:
+        st.session_state.something = '' 
+        
+    st.text_input('Something', key='widget', on_change=submit)
+    st.write(f'Last submission: {st.session_state.something}')
+    
     match selected:
         case 'New City': new_city()
         case 'Saved Cities': saved_cities()
+        case _: welcome('Regev')
         
     
     # type_city(input ('Would you like to check the weather in a city? (Y/N): '))
