@@ -2,353 +2,275 @@ import requests
 from datetime import datetime
 import pytz
 import streamlit as st
+import pandas as pd
+from collections import OrderedDict
+import json
+import numpy as np
+import country_codes as cc
 
-cities_list = []
-cities_list.append(('Tokyo', 'Japan'))
-cities_list.append(('Buenos Aires', 'Argentina'))
-cities_list.append(('Tel Aviv', 'Israel'))
-cities_list.append(('Rome', 'Italy'))
-cities_list.sort()
+# Get data from csv
+file = "worldcities.csv"
+data = pd.read_csv(file)
 
-country_codes = {
-    "Afghanistan": "AF",
-    "Albania": "AL",
-    "Algeria": "DZ",
-    "Andorra": "AD",
-    "Angola": "AO",
-    "Antigua and Barbuda": "AG",
-    "Argentina": "AR",
-    "Armenia": "AM",
-    "Australia": "AU",
-    "Austria": "AT",
-    "Azerbaijan": "AZ",
-    "Bahamas": "BS",
-    "Bahrain": "BH",
-    "Bangladesh": "BD",
-    "Barbados": "BB",
-    "Belarus": "BY",
-    "Belgium": "BE",
-    "Belize": "BZ",
-    "Benin": "BJ",
-    "Bhutan": "BT",
-    "Bolivia": "BO",
-    "Bosnia and Herzegovina": "BA",
-    "Botswana": "BW",
-    "Brazil": "BR",
-    "Brunei": "BN",
-    "Bulgaria": "BG",
-    "Burkina Faso": "BF",
-    "Burundi": "BI",
-    "Cabo Verde": "CV",
-    "Cambodia": "KH",
-    "Cameroon": "CM",
-    "Canada": "CA",
-    "Central African Republic": "CF",
-    "Chad": "TD",
-    "Chile": "CL",
-    "China": "CN",
-    "Colombia": "CO",
-    "Comoros": "KM",
-    "Congo": "CG",
-    "Costa Rica": "CR",
-    "Croatia": "HR",
-    "Cuba": "CU",
-    "Cyprus": "CY",
-    "Czech Republic": "CZ",
-    "Denmark": "DK",
-    "Djibouti": "DJ",
-    "Dominica": "DM",
-    "Dominican Republic": "DO",
-    "Ecuador": "EC",
-    "Egypt": "EG",
-    "El Salvador": "SV",
-    "Equatorial Guinea": "GQ",
-    "Eritrea": "ER",
-    "Estonia": "EE",
-    "Eswatini": "SZ",
-    "Ethiopia": "ET",
-    "Fiji": "FJ",
-    "Finland": "FI",
-    "France": "FR",
-    "Gabon": "GA",
-    "Gambia": "GM",
-    "Georgia": "GE",
-    "Germany": "DE",
-    "Ghana": "GH",
-    "Greece": "GR",
-    "Grenada": "GD",
-    "Guatemala": "GT",
-    "Guinea": "GN",
-    "Guinea-Bissau": "GW",
-    "Guyana": "GY",
-    "Haiti": "HT",
-    "Honduras": "HN",
-    "Hungary": "HU",
-    "Iceland": "IS",
-    "India": "IN",
-    "Indonesia": "ID",
-    "Iran": "IR",
-    "Iraq": "IQ",
-    "Ireland": "IE",
-    "Israel": "IL",
-    "Italy": "IT",
-    "Jamaica": "JM",
-    "Japan": "JP",
-    "Jordan": "JO",
-    "Kazakhstan": "KZ",
-    "Kenya": "KE",
-    "Kiribati": "KI",
-    "Kuwait": "KW",
-    "Kyrgyzstan": "KG",
-    "Laos": "LA",
-    "Latvia": "LV",
-    "Lebanon": "LB",
-    "Lesotho": "LS",
-    "Liberia": "LR",
-    "Libya": "LY",
-    "Liechtenstein": "LI",
-    "Lithuania": "LT",
-    "Luxembourg": "LU",
-    "Madagascar": "MG",
-    "Malawi": "MW",
-    "Malaysia": "MY",
-    "Maldives": "MV",
-    "Mali": "ML",
-    "Malta": "MT",
-    "Marshall Islands": "MH",
-    "Mauritania": "MR",
-    "Mauritius": "MU",
-    "Mexico": "MX",
-    "Micronesia": "FM",
-    "Moldova": "MD",
-    "Monaco": "MC",
-    "Mongolia": "MN",
-    "Montenegro": "ME",
-    "Morocco": "MA",
-    "Mozambique": "MZ",
-    "Myanmar (Burma)": "MM",
-    "Namibia": "NA",
-    "Nauru": "NR",
-    "Nepal": "NP",
-    "Netherlands": "NL",
-    "New Zealand": "NZ",
-    "Nicaragua": "NI",
-    "Niger": "NE",
-    "Nigeria": "NG",
-    "North Korea": "KP",
-    "North Macedonia": "MK",
-    "Norway": "NO",
-    "Oman": "OM",
-    "Pakistan": "PK",
-    "Palau": "PW",
-    "Panama": "PA",
-    "Papua New Guinea": "PG",
-    "Paraguay": "PY",
-    "Peru": "PE",
-    "Philippines": "PH",
-    "Poland": "PL",
-    "Portugal": "PT",
-    "Qatar": "QA",
-    "Romania": "RO",
-    "Russia": "RU",
-    "Rwanda": "RW",
-    "Saint Kitts and Nevis": "KN",
-    "Saint Lucia": "LC",
-    "Saint Vincent and the Grenadines": "VC",
-    "Samoa": "WS",
-    "San Marino": "SM",
-    "Sao Tome and Principe": "ST",
-    "Saudi Arabia": "SA",
-    "Senegal": "SN",
-    "Serbia": "RS",
-    "Seychelles": "SC",
-    "Sierra Leone": "SL",
-    "Singapore": "SG",
-    "Slovakia": "SK",
-    "Slovenia": "SI",
-    "Solomon Islands": "SB",
-    "Somalia": "SO",
-    "South Africa": "ZA",
-    "South Korea": "KR",
-    "South Sudan": "SS",
-    "Spain": "ES",
-    "Sri Lanka": "LK",
-    "Sudan": "SD",
-    "Suriname": "SR",
-    "Sweden": "SE",
-    "Switzerland": "CH",
-    "Syria": "SY",
-    "Taiwan": "TW",
-    "Tajikistan": "TJ",
-    "Tanzania": "TZ",
-    "Thailand": "TH",
-    "Timor-Leste": "TL",
-    "Togo": "TG",
-    "Tonga": "TO",
-    "Trinidad and Tobago": "TT",
-    "Tunisia": "TN",
-    "Turkey": "TR",
-    "Turkmenistan": "TM",
-    "Tuvalu": "TV",
-    "Uganda": "UG",
-    "Ukraine": "UA",
-    "United Arab Emirates": "AE",
-    "United Kingdom": "GB",
-    "United States": "US",
-    "Uruguay": "UY",
-    "Uzbekistan": "UZ",
-    "Vanuatu": "VU",
-    "Vatican City": "VA",
-    "Venezuela": "VE",
-    "Vietnam": "VN",
-    "Yemen": "YE",
-    "Zambia": "ZM",
-    "Zimbabwe": "ZW",
-}
+# Set variables
+if "show_details" not in st.session_state:
+    st.session_state.show_details = False
 
+ex_user_table = {"City": ['Barcelona', 'Tel Aviv', 'Delhi'],
+                 "Country": ['Spain', 'Israel', 'India'],
+                 "Time Zone": ['+1:00 UTC', '+2:00 UTC', '+5:30 UTC'],
+                 "Country Code": ['ES', 'IL', 'IN'],
+                 "Lat": ['41.390', '32.068', '28.644'],
+                 "Lng": ['2.154', '34.785', '77.216']}
+
+# API
 api_key = '4d20a4dc273256d2214e0d809460c1dd'
 
-def get_weather(api_key, city,country_code):
+# Functions
+
+
+def save_new_city(city, country, time_difference,
+                  country_code, lat, lng):
+    ex_user_table["City"].append(city)
+    ex_user_table["Country"].append(country)
+    if time_difference > 0:
+        ex_user_table["Time Zone"].append(f'+{time_difference}:00 UTC')
+    elif time_difference < 0:
+        ex_user_table["Time Zone"].append(f'-{time_difference}:00 UTC')
+    else:
+        ex_user_table["Time Zone"].append('0:00 UTC')
+    ex_user_table["Country Code"].append(country_code)
+    ex_user_table["Lat"].append(lat)
+    ex_user_table["Lng"].append(lng)
+    print(ex_user_table)
+
+    st.text('Saved successfully')
+
+
+def get_weather(api_key, city, country_code, temp, lat=0, lng=0):
     base_url = "http://api.openweathermap.org/data/2.5/weather"
+
+    if temp == 'Celsius':
+        units = 'metric'
+        units_sign = '°C'
+    elif temp == 'Kelvin':
+        units = 'standard'
+        units_sign = '°K'
+    elif temp == 'Fahrenheit':
+        units = 'imperial'
+        units_sign = '°F'
 
     params = {
         'q': f'{city},{country_code}',
         'appid': api_key,
-        'units': 'metric'
+        'units': units
     }
-    
+
     try:
         response = requests.get(base_url, params=params)
-        data = response.json()
-        # print (json.dumps(data, indent = 2))
+        json_data = response.json()
+
+        print(json.dumps(json_data, indent=2))
 
         if response.status_code == 200:
             # Extract relevant information from the response
-            weather_description = data['weather'][0]['description']
-            temperature = data['main']['temp']
-            humidity = data['main']['humidity']
-            timezone = data.get('timezone', int)
+            weather_description = json_data['weather'][0]['description']
+            weather_icon = json_data['weather'][0]['icon']
+            temperature = json_data['main']['temp']
+            feels_like = json_data['main']['feels_like']
+            humidity = json_data['main']['humidity']
+            timezone = json_data.get('timezone', int)
+            image_url = f"https://openweathermap.org/img/wn/{weather_icon}@2x.png"
 
-            print(f"Weather in {city.title()}, {country_code}:")
-            print(f"Description: {weather_description}")
-            print(f"Temperature: {temperature:.2f}°C")
-            print(f"Humidity: {humidity}%")
-            print(f"Timezone: {timezone}")
-            
-            st.markdown(f"## Weather in {city.title()}, {country_code}:")
-                
+            st.markdown("***")
+            st.markdown(
+                f"## Weather in {city.title()}, {country_code}:")
+
             col1, col2, col3 = st.columns(3)
             with col1:
-                st.write(f"Temperature: {temperature:.2f}°C")
+                st.markdown(f"#### 🌡️ Temperature:")
+                st.markdown(f"### {temperature:.2f}{units_sign}")
+                st.markdown(f"#### Feels like:")
+                st.markdown(f"### {feels_like:.2f}{units_sign}")
 
             with col2:
-                st.write(f"Description: {weather_description.capitalize()}")
-
+                st.markdown(f"#### Description:")
+                st.markdown(f"##### {weather_description.capitalize()}")
+                st.image(image_url)
             with col3:
-                st.write(f"Humidity: {humidity}%")
-            
+                st.markdown(f"#### Humidity:")
+                st.markdown(f"### {humidity}%")
 
-            # print(f"Timezone is: {timezone}")
-            print (int(int(timezone)/3600))
-            return int(int(timezone)/3600)
+            show_xweather = st.toggle("Extended weather mdoe")
+            if (show_xweather):
+                st.markdown("***")
+                st.markdown(f"## More!")
+
+            return int(int(timezone)/3600), {"latitude": lat, "longitude": lng, "zoom": 10}
         else:
             print(f"Error: {data['message']}")
+
     except Exception as e:
         print(f"An error occurred: {e}")
-        
+        st.markdown(
+            f"We're sorry, it's seems like there is no weather information for {city}.")
+
+
 def get_datetime_in_timezone(time_difference: int):
     # Get the current UTC time
     utc_now = datetime.utcnow()
 
     # Calculate the time with the specified difference
-    target_timezone = pytz.timezone(f'Etc/GMT{"-" if time_difference >= 0 else ""}{time_difference}')
-    target_datetime = utc_now.replace(tzinfo=pytz.utc).astimezone(target_timezone)
+    target_timezone = pytz.timezone(
+        f'Etc/GMT{"-" if time_difference >= 0 else ""}{time_difference}')
+    target_datetime = utc_now.replace(
+        tzinfo=pytz.utc).astimezone(target_timezone)
 
     return target_datetime
 
-def save_new_city(city, country_code):
-    global cities_list
-    cities_list.append((city, country_code))
-    print(cities_list)
-    st.text('Saved successfully')
-    
 
-def new_city():
-    user_time = datetime.now(pytz.timezone('Israel'))
-    formatted_user_time = user_time.strftime("%A, %B %d, %Y, %H:%M %p")
-    st.markdown("# Current time in Isreal:")
-    st.markdown(formatted_user_time)
-    st.markdown("## <span style='color:#000080;'>Regev Ace</span>", unsafe_allow_html=True)
-    st.text('Created as a python project for Data Science study')
-    st.markdown("<span style='border-bottom: 5px solid green;'></span>", unsafe_allow_html=True)
+# main screen
+st.title("My Humble Weather App ⛅")
+st.markdown("#### Created by <span style='color:#000080;'>Regev Ace</span>",
+            unsafe_allow_html=True)
+st.text('This app is the first python project for Data Science study')
+st.markdown("***")
 
-    city = st.text_input('Enter your requested city: ', key="widget")
-    if city:
-        # 2 - country
-        country = st.selectbox('Please choose a country from the list below:', options= country_codes.keys(), placeholder="Choose a country",index=None)
-        if country is not None:
-            country_code = country_codes[country]
-            time_difference = get_weather(api_key, city, country_code)
+# The Sidebar
+with st.sidebar:
+    st.title("Menu")
+    add_radio = st.radio(
+        "How would you like to search?",
+        ("City from list", "Saved cities", "Free search"), key="radio"
+    )
+
+# Main Screen after choosing from sidebar radio
+
+# Option 1 - List
+if st.session_state['radio'] == "City from list":
+    st.session_state.show_details = False
+    # City from list
+    st.subheader("Choose a city")
+    country_list = list(data.loc[:, "country"])
+    country_list.sort()
+    sorted_country_list = OrderedDict.fromkeys(country_list)
+    country = st.selectbox(
+        'Select a country', options=sorted_country_list, placeholder='Choose a country', key="country_selectbox", index=None)
+
+    if (country):
+        country_data = data.loc[data.loc[:, "country"] == country, :]
+        city_set = country_data.loc[:, "city_ascii"]
+        city = st.selectbox('Select a city', options=sorted(
+            city_set), placeholder='Choose a city', index=0, key="city_selectbox")
+        country_code_dt = country_data.loc[data.loc[:,
+                                                    "city_ascii"] == city, "iso2"]
+        country_code = country_code_dt.iloc[0]
+
+        if (city):
+            lat = float(
+                country_data.loc[data.loc[:, "city_ascii"] == city, "lat"])
+            lng = float(
+                country_data.loc[data.loc[:, "city_ascii"] == city, "lng"])
+            temp = st.radio(
+                'Select temperature units', options=('Celsius', 'Kelvin', 'Fahrenheit'), index=None, key="deg_radio")
+            if (temp):
+                time_difference, location = get_weather(
+                    api_key, city, country_code, temp, lat, lng)
+                result_datetime = get_datetime_in_timezone(time_difference)
+                st.session_state.show_details = True
+
+# Option 2 - Saved
+elif st.session_state['radio'] == "Saved cities":
+    st.session_state.show_details = False
+    st.subheader("Choose a saved city:")
+    # st.table(saved_cities_table)
+
+    dt = pd.DataFrame(ex_user_table)
+    dt_section = dt.loc[:, ["City", "Country", "Time Zone"]]
+    st.table(dt_section)
+
+    city_from_table = st.selectbox('Select a city from table', options=sorted(
+        dt_section["City"]), placeholder='Choose a city', index=None, key="table_select_box", )
+
+    if (city_from_table):
+        city = city_from_table
+        # switch_source("col2")
+        for i, table_city in enumerate(ex_user_table["City"]):
+            if table_city == city_from_table:
+                saved_index = i
+        country_code_from_table = ex_user_table["Country Code"][saved_index]
+        temp = st.radio(
+            'Select temperature units', options=('Celsius', 'Kelvin', 'Fahrenheit'), index=None, key="saved radio")
+        if (temp):
+            time_difference_topple = get_weather(
+                api_key, city_from_table, country_code_from_table, temp)
+            time_difference = time_difference_topple[0]
+            location = {"latitude": float(ex_user_table["Lat"][saved_index]),
+                        "longitude": float(ex_user_table["Lng"][saved_index]), "zoom": 10}
             result_datetime = get_datetime_in_timezone(time_difference)
-            try:
-                # Print the result with the custom strftime format
-                print(f"Current date and time in {city} is:")
-                print(result_datetime.strftime("%A, %B %d, %Y, %H:%M %p"))
-                st.markdown(f'## Current date and time in {city} is:\n{result_datetime.strftime("%A, %B %d, %Y, %H:%M %p")}')
-                
-            except ValueError:
-                print("Invalid input. Please enter a valid number.") 
-            
-            save_button = st.button("Save City")       
+            st.session_state.show_details = True
+
+# Option 3 - Free
+elif st.session_state['radio'] == "Free search":
+    st.session_state.show_details = False
+    st.markdown("<span style='border-bottom: 5px solid green;'></span>",
+                unsafe_allow_html=True)
+
+    city = st.text_input('Enter your requested city: ', key="city input")
+    if city:
+        country = st.text_input(
+            'Enter a country name or code (two letters): ', key="country input")
+        city = city.capitalize()
+        if country:
+            if len(country) != 2:
+                country_code = cc.country_codes[country.capitalize()]
+                country = country.capitalize()
+            else:
+                country_code = country.upper()
+                country = list(cc.country_codes.keys())[list(
+                    cc.country_codes.values()).index(country_code)]
+
+            # Every row where country code like is as choosen, Every column `DF[row([bool]), column(:)]`
+            country_data = data.loc[data.loc[:, "iso2"] == country_code, :]
+
+            lat = float(
+                country_data.loc[data.loc[:, "city_ascii"] == city.capitalize(), "lat"])
+            lng = float(
+                country_data.loc[data.loc[:, "city_ascii"] == city.capitalize(), "lng"])
+            temp = st.radio(
+                'Select temperature units', options=('Celsius', 'Kelvin', 'Fahrenheit'), index=None, key="Free radio")
+            if (temp):
+                time_difference, location = get_weather(
+                    api_key, city, country_code, temp, lat, lng)
+                result_datetime = get_datetime_in_timezone(time_difference)
+                st.session_state.show_details = True
+
+            save_button = st.button("Save City")
             if (save_button):
-                save_new_city(city, country_code)        
-            
+                save_new_city(city, country, time_difference,
+                              country_code, lat, lng)
 
-def saved_cities():
 
-    st.title('Please Choose a city from the list: ')
-    print (cities_list)
-    selected_city = st.selectbox(" ",options=[city [0] for city in cities_list], placeholder="Choose a city",
-                                 index=None, label_visibility="hidden")
-    if selected_city is not None:
-        for city in cities_list:
-            if selected_city in city:
-                selected_city_county_code = country_codes[city[1]]
-        time_difference = get_weather(api_key, selected_city, selected_city_county_code)
-        result_datetime = get_datetime_in_timezone(time_difference)
-        try:
-                # Print the result with the custom strftime format
-                print(f"Current date and time in {selected_city} is:")
-                print(result_datetime.strftime("%A, %B %d, %Y, %H:%M %p"))
-                st.markdown(f'## Current date and time in {selected_city} is:\n{result_datetime.strftime("%A, %B %d, %Y, %H:%M %p")}')
-                
-        except ValueError:
-            print("Invalid input. Please enter a valid number.") 
-            
-def welcome(name):
-    st.title(f'Greetings {name}')
-    
-def submit():
-    st.session_state.something = st.session_state.widget
-    st.session_state.widget = ''
+# Data Display
+if (st.session_state.show_details):
+    st.markdown("***")
+    show_time = st.checkbox('Show current time in selected location')
+    if show_time:
+        st.markdown(f'#### ⏰ Current date and time in {city} is:')
+        st.markdown(
+            f'{result_datetime.strftime("%A, %B %d, %Y, %H:%M %p")}')
+        st.markdown("***")
 
-if __name__ == "__main__":
-    with st.sidebar:
-        st.title('Select User')
-        selected = st.sidebar.selectbox("Please Choose one of the following optoins: ", ("New City", "Saved Cities"), 
-                                        placeholder="Choose an option", index=None)
-    
-    if 'something' not in st.session_state:
-        st.session_state.something = '' 
-        
-    st.text_input('Something', key='widget', on_change=submit)
-    st.write(f'Last submission: {st.session_state.something}')
-    
-    match selected:
-        case 'New City': new_city()
-        case 'Saved Cities': saved_cities()
-        case _: welcome('Regev')
-        
-    
-    # type_city(input ('Would you like to check the weather in a city? (Y/N): '))
-    
+    show_map = st.checkbox('Show map')
+    if show_map:
+        df = pd.DataFrame({
+            "col1": np.random.randn(1000) / 50 + location['latitude'],
+            "col2": np.random.randn(1000) / 50 + location['longitude'],
+            "col3": np.random.randn(1000) * 100
+        })
+
+        st.map(data=df, latitude='col1', longitude='col2',
+               size='col3', color='#00000000', zoom=12)
+        st.markdown("***")
+
+# st.write(st.session_state)
