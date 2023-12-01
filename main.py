@@ -232,6 +232,11 @@ def get_weather(api_key, city,country_code):
             return int(timezone/3600)
         else:
             print(f"Error: {data['message']}")
+<<<<<<< Updated upstream
+=======
+            st.markdown("No weather data was found for the selected city.")
+
+>>>>>>> Stashed changes
     except Exception as e:
         print(f"An error occurred: {e}")
         
