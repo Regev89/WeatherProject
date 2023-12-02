@@ -31,6 +31,7 @@ api_key = '4d20a4dc273256d2214e0d809460c1dd'
 
 def save_new_city(city, country, time_difference,
                   country_code, lat, lng):
+    # Sould be WRITEN to a file and not to a variable or the code will always reset the variable when rerun the app
     ex_user_table["City"].append(city)
     ex_user_table["Country"].append(country)
     if time_difference > 0:
@@ -44,7 +45,7 @@ def save_new_city(city, country, time_difference,
     ex_user_table["Lng"].append(lng)
     print(ex_user_table)
 
-    st.text('Saved successfully')
+    st.text('This fiture will be added soon')
 
 
 def get_weather(api_key, city, country_code, temp, lat=0, lng=0):
@@ -234,6 +235,7 @@ elif st.session_state['radio'] == "Free search":
                 # Every row where country code like is as choosen, Every column `DF[row([bool]), column(:)]`
                 country_data = data.loc[data.loc[:, "iso2"] == country_code, :]
 
+                # Checking whether the Series {country_data.city} has a value equals to {city}
                 if city in country_data.city.values:
                     lat = float(
                         country_data.loc[data.loc[:, "city_ascii"] == city, "lat"])
@@ -248,11 +250,12 @@ elif st.session_state['radio'] == "Free search":
                             time_difference)
                         st.session_state.show_details = True
 
-                    # Save button
-                    save_button = st.button("Save City")
-                    if (save_button):
-                        save_new_city(city, country, time_difference,
-                                      country_code, lat, lng)
+                        # Save button
+                        save_button = st.button("Save City")
+                        if (save_button):
+                            save_new_city(city, country, time_difference,
+                                          country_code, lat, lng)
+
                 else:
                     st.markdown(
                         f"We're sorry, it's seems like there is no city called {city} in {country}.")
