@@ -108,12 +108,12 @@ def get_weather(api_key, city, country_code, temp, lat=0, lng=0):
 
             return int(int(timezone)/3600), {"latitude": lat, "longitude": lng, "zoom": 10}
         else:
+            st.markdown(
+                f"We're sorry, it's seems like there is no weather information for {city}.")
             print(f"Error: {data['message']}")
 
     except Exception as e:
         print(f"An error occurred: {e}")
-        st.markdown(
-            f"We're sorry, it's seems like there is no weather information for {city}.")
 
 
 def get_datetime_in_timezone(time_difference: int):
@@ -222,33 +222,43 @@ elif st.session_state['radio'] == "Free search":
             'Enter a country name or code (two letters): ', key="country input")
         city = city.capitalize()
         if country:
-            if len(country) != 2:
-                country_code = cc.country_codes[country.capitalize()]
-                country = country.capitalize()
+            if country.title() in cc.country_codes.keys() or country.upper() in cc.country_codes.values():
+                if len(country) != 2:
+                    country_code = cc.country_codes[country.title()]
+                    country = country.title()
+                else:
+                    country_code = country.upper()
+                    country = list(cc.country_codes.keys())[list(
+                        cc.country_codes.values()).index(country_code)]
+
+                # Every row where country code like is as choosen, Every column `DF[row([bool]), column(:)]`
+                country_data = data.loc[data.loc[:, "iso2"] == country_code, :]
+
+                if city in country_data.city.values:
+                    lat = float(
+                        country_data.loc[data.loc[:, "city_ascii"] == city, "lat"])
+                    lng = float(
+                        country_data.loc[data.loc[:, "city_ascii"] == city, "lng"])
+                    temp = st.radio(
+                        'Select temperature units', options=('Celsius', 'Kelvin', 'Fahrenheit'), index=None, key="Free radio")
+                    if (temp):
+                        time_difference, location = get_weather(
+                            api_key, city, country_code, temp, lat, lng)
+                        result_datetime = get_datetime_in_timezone(
+                            time_difference)
+                        st.session_state.show_details = True
+
+                    # Save button
+                    save_button = st.button("Save City")
+                    if (save_button):
+                        save_new_city(city, country, time_difference,
+                                      country_code, lat, lng)
+                else:
+                    st.markdown(
+                        f"We're sorry, it's seems like there is no city called {city} in {country}.")
             else:
-                country_code = country.upper()
-                country = list(cc.country_codes.keys())[list(
-                    cc.country_codes.values()).index(country_code)]
-
-            # Every row where country code like is as choosen, Every column `DF[row([bool]), column(:)]`
-            country_data = data.loc[data.loc[:, "iso2"] == country_code, :]
-
-            lat = float(
-                country_data.loc[data.loc[:, "city_ascii"] == city.capitalize(), "lat"])
-            lng = float(
-                country_data.loc[data.loc[:, "city_ascii"] == city.capitalize(), "lng"])
-            temp = st.radio(
-                'Select temperature units', options=('Celsius', 'Kelvin', 'Fahrenheit'), index=None, key="Free radio")
-            if (temp):
-                time_difference, location = get_weather(
-                    api_key, city, country_code, temp, lat, lng)
-                result_datetime = get_datetime_in_timezone(time_difference)
-                st.session_state.show_details = True
-
-            save_button = st.button("Save City")
-            if (save_button):
-                save_new_city(city, country, time_difference,
-                              country_code, lat, lng)
+                st.markdown(
+                    f"We're sorry, it's seems like the country name or code you typed is incorrect.")
 
 
 # Data Display
