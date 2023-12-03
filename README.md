@@ -38,6 +38,13 @@ After selecting your preferred temperature unit the information will pop on the 
 
 - Python 3.x
 - Requests library (install using `pip install requests`)
+- Datetime library (built-in)
+- Pytz library (install using `pip install pytz`)
+- Streamlit library (install using `pip install streamlit`)
+- Pandas library (install using `pip install pandas`)
+- Collections module (built-in)
+- JSON module (built-in)
+- NumPy library (install using `pip install numpy`)
 
 ## How to Run
 
