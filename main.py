@@ -140,7 +140,8 @@ st.markdown("***")
 
 # The Sidebar
 with st.sidebar:
-    st.title("My Humble Weather App ⛅")
+    st.title("My Humble")
+    st.title("Weather App ⛅")
     st.title("Menu")
     add_radio = st.radio(
         "How would you like to search?",
