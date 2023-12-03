@@ -144,7 +144,7 @@ with st.sidebar:
     st.title("Menu")
     add_radio = st.radio(
         "How would you like to search?",
-        ("City from list", "Saved cities", "Free search"), key="radio"
+        ("City from list", "Saved cities", "Free search"), key="radio", index=None
     )
 
 # Main Screen after choosing from sidebar radio
@@ -264,6 +264,10 @@ elif st.session_state['radio'] == "Free search":
                 st.markdown(
                     f"We're sorry, it's seems like the country name or code you typed is incorrect.")
 
+
+if st.session_state['radio'] == None:
+    st.markdown(
+        "#### Please select from the menu your preferred search method.")
 
 # Data Display
 if (st.session_state.show_details):
