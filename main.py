@@ -279,7 +279,7 @@ if (st.session_state.show_details):
     if show_map:
         df = pd.DataFrame({
             "col1": location['latitude'],
-            "col2":location['longitude'],
+            "col2":location['longitude']
             # "col3": np.random.randn(1000) * 100
         })
 
