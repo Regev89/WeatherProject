@@ -274,16 +274,17 @@ if (st.session_state.show_details):
             f'{result_datetime.strftime("%A, %B %d, %Y, %H:%M %p")}')
         st.markdown("***")
 
+    # np.random.randn(1000) / 50 +  size='col3'
     show_map = st.checkbox('Show map')
     if show_map:
         df = pd.DataFrame({
-            "col1": np.random.randn(1000) / 50 + location['latitude'],
-            "col2": np.random.randn(1000) / 50 + location['longitude'],
-            "col3": np.random.randn(1000) * 100
+            "col1": location['latitude'],
+            "col2":location['longitude'],
+            # "col3": np.random.randn(1000) * 100
         })
 
         st.map(data=df, latitude='col1', longitude='col2',
-               size='col3', color='#00000000', zoom=12)
+              color='#00000000', zoom=12)
         st.markdown("***")
 
 # st.write(st.session_state)
