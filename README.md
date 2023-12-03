@@ -9,6 +9,7 @@ The Weather App is a simple Python application that provides current weather inf
 - **main.py**: The main file that contains the application code.
 - **worldcities.csv**: A CSV file containing a vast list of cities from around the world.
 - **country_codes.py**: A Python file with a dictionary mapping countries to their respective ISO2 country codes.
+- **requirements.txt**: A standard file for packages used in this app.
 
 ## Features
 
