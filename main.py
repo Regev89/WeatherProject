@@ -103,10 +103,10 @@ def get_weather(api_key, city, country_code, temp, lat=0, lng=0):
                 st.markdown(f"### {humidity}%")
 
             # ADD more information from Json
-            show_xweather = st.toggle("Extended weather mdoe")
-            if (show_xweather):
-                st.markdown("***")
-                st.markdown(f"## More!")
+            # show_xweather = st.toggle("Extended weather mdoe")
+            # if (show_xweather):
+            #     st.markdown("***")
+            #     st.markdown(f"## More!")
 
             return int(int(timezone)/3600), {"latitude": lat, "longitude": lng, "zoom": 10}
         else:
@@ -140,6 +140,7 @@ st.markdown("***")
 
 # The Sidebar
 with st.sidebar:
+    st.title("My Humble Weather App ⛅")
     st.title("Menu")
     add_radio = st.radio(
         "How would you like to search?",
@@ -215,8 +216,7 @@ elif st.session_state['radio'] == "Saved cities":
 # Option 3 - Free
 elif st.session_state['radio'] == "Free search":
     st.session_state.show_details = False
-    st.markdown("<span style='border-bottom: 5px solid green;'></span>",
-                unsafe_allow_html=True)
+    st.subheader("Enter city and country:")
 
     city = st.text_input('Enter your requested city: ', key="city input")
     if city:
@@ -275,17 +275,17 @@ if (st.session_state.show_details):
             f'{result_datetime.strftime("%A, %B %d, %Y, %H:%M %p")}')
         st.markdown("***")
 
-    # np.random.randn(1000) / 50 +  
+    # np.random.randn(1000) / 50 +
     show_map = st.checkbox('Show map')
     if show_map:
         df = pd.DataFrame({
             "col1": location['latitude'],
-            "col2":location['longitude'],
+            "col2": location['longitude'],
             "col3": np.random.randn(1000) * 100
         })
 
         st.map(data=df, latitude='col1', longitude='col2', size='col3',
-              color='#00000000', zoom=12)
+               color='#00000000', zoom=12)
         st.markdown("***")
 
 # st.write(st.session_state)
