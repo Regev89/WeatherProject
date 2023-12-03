@@ -103,10 +103,10 @@ def get_weather(api_key, city, country_code, temp, lat=0, lng=0):
                 st.markdown(f"### {humidity}%")
 
             # ADD more information from Json
-            # show_xweather = st.toggle("Extended weather mdoe")
-            # if (show_xweather):
-            #     st.markdown("***")
-            #     st.markdown(f"## More!")
+            show_xweather = st.toggle("Extended weather mdoe")
+            if (show_xweather):
+                st.markdown("***")
+                st.markdown(f"## More!")
 
             return int(int(timezone)/3600), {"latitude": lat, "longitude": lng, "zoom": 10}
         else:
