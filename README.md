@@ -18,7 +18,7 @@ The Weather App is a simple Python application that provides current weather inf
 3. **Free Text Input**: Enter the city and country manually for flexibility in searching.
 
 ## Future Features
-1. Save a city to the list of saved cities after searching that city.
+1. Save a city to the list of saved cities after searching that city - that fiture now works!
 2. Get extendend information about selected city with from provided Json.
 
 ## How to Use
@@ -52,6 +52,7 @@ After selecting your preferred temperature unit the information will pop on the 
 1. Clone the repository to your local machine.
 2. Install the required dependencies.
 3. Run `main.py` using a Python interpreter.
+* You can also run as a localhost at streamlit: 'streamlit run main.py'
 
 Here is a link to the app on streamlit: `https://weatherproject-ir8gryucmhdqksnrecdflo.streamlit.app/`
 
