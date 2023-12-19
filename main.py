@@ -7,21 +7,25 @@ from collections import OrderedDict
 import json
 import numpy as np
 import country_codes as cc
+import csv
 
 # Get data from csv
-file = "worldcities.csv"
-data = pd.read_csv(file)
+file_all_cities = "worldcities.csv"
+data = pd.read_csv(file_all_cities)
+
+file_saved_cities = "saved_cities.csv"
+
 
 # Set variables
 if "show_details" not in st.session_state:
     st.session_state.show_details = False
 
-ex_user_table = {"City": ['Barcelona', 'Tel Aviv', 'Delhi'],
-                 "Country": ['Spain', 'Israel', 'India'],
-                 "Time Zone": ['+1:00 UTC', '+2:00 UTC', '+5:30 UTC'],
-                 "Country Code": ['ES', 'IL', 'IN'],
-                 "Lat": ['41.390', '32.068', '28.644'],
-                 "Lng": ['2.154', '34.785', '77.216']}
+# ex_user_table = {"City": ['Barcelona', 'Tel Aviv', 'Delhi'],
+#                  "Country": ['Spain', 'Israel', 'India'],
+#                  "Time Zone": ['+1:00 UTC', '+2:00 UTC', '+5:30 UTC'],
+#                  "Country Code": ['ES', 'IL', 'IN'],
+#                  "Lat": ['41.390', '32.068', '28.644'],
+#                  "Lng": ['2.154', '34.785', '77.216']}
 
 # API
 api_key = '4d20a4dc273256d2214e0d809460c1dd'
@@ -29,23 +33,37 @@ api_key = '4d20a4dc273256d2214e0d809460c1dd'
 # Functions
 
 
-def save_new_city(city, country, time_difference,
-                  country_code, lat, lng):
-    # Sould be WRITEN to a file and not to a variable or the code will always reset the variable when rerun the app
-    ex_user_table["City"].append(city)
-    ex_user_table["Country"].append(country)
-    if time_difference > 0:
-        ex_user_table["Time Zone"].append(f'+{time_difference}:00 UTC')
-    elif time_difference < 0:
-        ex_user_table["Time Zone"].append(f'-{time_difference}:00 UTC')
-    else:
-        ex_user_table["Time Zone"].append('0:00 UTC')
-    ex_user_table["Country Code"].append(country_code)
-    ex_user_table["Lat"].append(lat)
-    ex_user_table["Lng"].append(lng)
-    print(ex_user_table)
+# def format_for_csv(value):
+#     new_value = str(value)
+#     return f'{new_value}'
 
-    st.text('This fiture will be added soon')
+
+def save_new_city(df, timezone):
+
+    if timezone > 0:
+        df["timezone"] = f'+{time_difference}:00 UTC'
+    elif timezone < 0:
+        df["timezone"] = f'{time_difference}:00 UTC'
+
+    try:
+        # Try to read the file to check if it has a header
+        saved_cities_data = pd.read_csv(file_saved_cities)
+    except pd.errors.EmptyDataError:
+        # If the file doesn't exist, write the header and the line
+        df.to_csv(file_saved_cities, mode='w', header=True,
+                  index=False, quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
+
+    else:
+        # If the file exists, only write the line without the header
+        if saved_cities_data.isin(df.iloc[0:1].to_dict(orient='list')).all(axis=1).any():
+            st.write("City already saved.")
+            st.write(df.iloc[0:1])
+
+        else:
+            formatted_df = df.map(lambda x: str(x))
+            formatted_df.to_csv(file_saved_cities, mode='a',
+                                header=False, index=False, quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
+            st.write("City saved succesfully!")
 
 
 def get_weather(api_key, city, country_code, temp, lat=0, lng=0):
@@ -108,6 +126,7 @@ def get_weather(api_key, city, country_code, temp, lat=0, lng=0):
             #     st.markdown("***")
             #     st.markdown(f"## More!")
 
+            # timezone_diff , map_location
             return int(int(timezone)/3600), {"latitude": lat, "longitude": lng, "zoom": 10}
         else:
             st.markdown(
@@ -170,10 +189,9 @@ if st.session_state['radio'] == "City from list":
         country_code = country_code_dt.iloc[0]
 
         if (city):
-            lat = float(
-                country_data.loc[data.loc[:, "city_ascii"] == city, "lat"])
-            lng = float(
-                country_data.loc[data.loc[:, "city_ascii"] == city, "lng"])
+            city_info = country_data.loc[data.loc[:, "city_ascii"] == city,]
+            lat = float(city_info["lat"])
+            lng = float(city_info["lng"])
             temp = st.radio(
                 'Select temperature units', options=('Celsius', 'Kelvin', 'Fahrenheit'), index=None, key="deg_radio")
             if (temp):
@@ -182,36 +200,46 @@ if st.session_state['radio'] == "City from list":
                 result_datetime = get_datetime_in_timezone(time_difference)
                 st.session_state.show_details = True
 
+                save_button = st.button("Save City")
+                if (save_button):
+                    save_new_city(city_info, time_difference)
+
 # Option 2 - Saved
 elif st.session_state['radio'] == "Saved cities":
     st.session_state.show_details = False
-    st.subheader("Choose a saved city:")
-    # st.table(saved_cities_table)
+    try:
+        saved_cities_data = pd.read_csv(file_saved_cities)
+    except pd.errors.EmptyDataError:
+        st.write("There are no saved cities yet.")
+    else:
 
-    dt = pd.DataFrame(ex_user_table)
-    dt_section = dt.loc[:, ["City", "Country", "Time Zone"]]
-    st.table(dt_section)
+        st.subheader("Choose a saved city:")
 
-    city_from_table = st.selectbox('Select a city from table', options=sorted(
-        dt_section["City"]), placeholder='Choose a city', index=None, key="table_select_box", )
+        dt = pd.DataFrame(saved_cities_data)
+        dt_section = dt.loc[:, ["city", "country", "timezone"]]
 
-    if (city_from_table):
-        city = city_from_table
-        # switch_source("col2")
-        for i, table_city in enumerate(ex_user_table["City"]):
-            if table_city == city_from_table:
-                saved_index = i
-        country_code_from_table = ex_user_table["Country Code"][saved_index]
-        temp = st.radio(
-            'Select temperature units', options=('Celsius', 'Kelvin', 'Fahrenheit'), index=None, key="saved radio")
-        if (temp):
-            time_difference_topple = get_weather(
-                api_key, city_from_table, country_code_from_table, temp)
-            time_difference = time_difference_topple[0]
-            location = {"latitude": float(ex_user_table["Lat"][saved_index]),
-                        "longitude": float(ex_user_table["Lng"][saved_index]), "zoom": 10}
-            result_datetime = get_datetime_in_timezone(time_difference)
-            st.session_state.show_details = True
+        st.table(dt_section)
+
+        city_from_table = st.selectbox('Select a city from table', options=sorted(
+            dt_section["city"]), placeholder='Choose a city', index=None, key="table_select_box", )
+
+        if (city_from_table):
+            city = city_from_table
+            # switch_source("col2")
+            for i, table_city in enumerate(dt["city"]):
+                if table_city == city_from_table:
+                    saved_index = i
+            country_code_from_table = dt["iso2"][saved_index]
+            temp = st.radio(
+                'Select temperature units', options=('Celsius', 'Kelvin', 'Fahrenheit'), index=None, key="saved radio")
+            if (temp):
+                time_difference_topple = get_weather(
+                    api_key, city_from_table, country_code_from_table, temp)
+                time_difference = time_difference_topple[0]
+                location = {"latitude": float(dt["lat"][saved_index]),
+                            "longitude": float(dt["lng"][saved_index]), "zoom": 10}
+                result_datetime = get_datetime_in_timezone(time_difference)
+                st.session_state.show_details = True
 
 # Option 3 - Free
 elif st.session_state['radio'] == "Free search":
@@ -238,10 +266,10 @@ elif st.session_state['radio'] == "Free search":
 
                 # Checking whether the Series {country_data.city} has a value equals to {city}
                 if city in country_data.city.values:
-                    lat = float(
-                        country_data.loc[data.loc[:, "city_ascii"] == city, "lat"])
-                    lng = float(
-                        country_data.loc[data.loc[:, "city_ascii"] == city, "lng"])
+                    city_info = country_data.loc[data.loc[:,
+                                                          "city_ascii"] == city,]
+                    lat = float(city_info["lat"])
+                    lng = float(city_info["lng"])
                     temp = st.radio(
                         'Select temperature units', options=('Celsius', 'Kelvin', 'Fahrenheit'), index=None, key="Free radio")
                     if (temp):
@@ -254,8 +282,7 @@ elif st.session_state['radio'] == "Free search":
                         # Save button
                         save_button = st.button("Save City")
                         if (save_button):
-                            save_new_city(city, country, time_difference,
-                                          country_code, lat, lng)
+                            save_new_city(city_info, time_difference)
 
                 else:
                     st.markdown(
