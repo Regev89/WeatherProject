@@ -18,7 +18,7 @@ The Weather App is a simple Python application that provides current weather inf
 3. **Free Text Input**: Enter the city and country manually for flexibility in searching.
 
 ## Future Features
-1. Save a city to the list of saved cities after searching that city - that fiture now works!
+1. Save a city to the list of saved cities after searching that city - that feature now works!
 2. Get extendend information about selected city with from provided Json.
 
 ## How to Use
